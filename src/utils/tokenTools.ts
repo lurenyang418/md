@@ -29,7 +29,8 @@ export function utf8to16(str: string) {
 
   while (i < len) {
     const c = str.charCodeAt(i++)
-    let char2, char3
+    let char2: number
+    let char3: number
 
     switch (c >> 4) {
       case 0:
@@ -233,7 +234,10 @@ export function base64encode(str: string) {
 }
 
 export function base64decode(str: string) {
-  let c1, c2, c3, c4
+  let c1: number
+  let c2: number
+  let c3: number
+  let c4: number
   let i = 0
   const len = str.length
   let out = ``
@@ -284,7 +288,5 @@ export function base64decode(str: string) {
 }
 
 export function safe64(base64: string) {
-  base64 = base64.replace(/\+/g, `-`)
-  base64 = base64.replace(/\//g, `_`)
-  return base64
+  return base64.replace(/\+/g, `-`).replace(/\//g, `_`)
 }

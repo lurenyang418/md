@@ -114,7 +114,7 @@ export const useStore = defineStore(`store`, () => {
 
   // 重命名 css 方案
   const renameTab = (name: string) => {
-    const tab = getCurrentTab()!
+    const tab = getCurrentTab()
     tab.title = name
     tab.name = name
     cssContentConfig.value.active = name

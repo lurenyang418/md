@@ -25,7 +25,7 @@ import {
 import fileApi from '@/utils/file'
 import CodeMirror from 'codemirror'
 
-import { ElCol, ElMessage } from 'element-plus'
+import { type ElCol, ElMessage } from 'element-plus'
 
 import { storeToRefs } from 'pinia'
 
@@ -249,7 +249,7 @@ function initEditor() {
 
   // 粘贴上传图片并插入
   editor.value.on(`paste`, (_cm, e) => {
-    if (!(e.clipboardData && e.clipboardData.items) || isImgLoading.value) {
+    if (!(e.clipboardData?.items) || isImgLoading.value) {
       return
     }
     for (let i = 0, len = e.clipboardData.items.length; i < len; ++i) {
@@ -302,11 +302,11 @@ function mdLocalToRemote() {
         })
       }),
     )
-    resList.forEach((item) => {
+    for (const item of resList) {
       md.str = md.str
         .replace(`](./${item.matchStr})`, `](${item.url})`)
         .replace(`](${item.matchStr})`, `](${item.url})`)
-    })
+    }
     editor.value!.setValue(md.str)
   }
 

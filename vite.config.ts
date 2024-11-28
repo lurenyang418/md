@@ -13,7 +13,8 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: process.env.SERVER_ENV === `NETLIFY` ? `/` : `/md/`, // 基本路径, 建议以绝对路径跟随访问目录
+  // base: process.env.SERVER_ENV === "NETLIFY" ? "/" : "/md/", // 基本路径, 建议以绝对路径跟随访问目录
+  base: `/`, // 基本路径, 建议以绝对路径跟随访问目录
   define: {
     process,
   },
@@ -24,7 +25,7 @@ export default defineConfig({
     nodePolyfills({
       include: [`path`, `util`, `timers`, `stream`, `fs`],
       overrides: {
-        // Since `fs` is not supported in browsers, we can use the `memfs` package to polyfill it.
+        // Since "fs" is not supported in browsers, we can use the "memfs" package to polyfill it.
         // fs: 'memfs',
       },
     }),

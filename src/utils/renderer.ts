@@ -55,7 +55,7 @@ function buildAddition(): string {
   `
 }
 
-function getStyles(styleMapping: ThemeStyles, tokenName: string, addition: string = ``): string {
+function getStyles(styleMapping: ThemeStyles, tokenName: string, addition = ``): string {
   const dict = styleMapping[tokenName as keyof ThemeStyles]
   if (!dict) {
     return ``
@@ -97,13 +97,13 @@ const macCodeSvg = `
 
 export function initRenderer(opts: IOpts) {
   const footnotes: [number, string, string][] = []
-  let footnoteIndex: number = 0
+  let footnoteIndex = 0
   let styleMapping: ThemeStyles = buildTheme(opts)
-  let codeIndex: number = 0
-  let listIndex: number = 0
-  let isOrdered: boolean = false
+  let codeIndex = 0
+  let listIndex = 0
+  let isOrdered = false
 
-  function styles(tag: string, addition: string = ``): string {
+  function styles(tag: string, addition = ``): string {
     return getStyles(styleMapping, tag, addition)
   }
 
@@ -206,6 +206,7 @@ export function initRenderer(opts: IOpts) {
     },
 
     image({ href, title, text }: Tokens.Image): string {
+      // biome-ignore lint/style/noNonNullAssertion: <explanation>
       const subText = styledContent(`figcaption`, transform(opts.legend!, text, title))
       const figureStyles = styles(`figure`)
       const imgStyles = styles(`image`)

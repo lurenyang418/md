@@ -35,11 +35,11 @@ export function customCssWithTemplate(jsonString: Partial<Record<Block | Inline,
   const newTheme = customizeTheme(theme, { color })
 
   const mergeProperties = <T extends Block | Inline = Block>(target: Record<T, PropertiesHyphen>, source: Partial<Record<Block | Inline | string, PropertiesHyphen>>, keys: T[]) => {
-    keys.forEach((key) => {
+    for (const key of keys) {
       if (source[key]) {
         target[key] = Object.assign(target[key] || {}, source[key])
       }
-    })
+    }
   }
 
   const blockKeys: Block[] = [
@@ -121,9 +121,9 @@ export function css2json(css: string): Partial<Record<Block | Inline, Properties
     const declarationObj = toObject(declarations)
 
     // 将声明对象关联到相应的选择器
-    selectors.forEach((selector) => {
+    for (const selector of selectors) {
       json[selector] = { ...(json[selector] || {}), ...declarationObj }
-    })
+    }
 
     // 处理下一个声明块
     css = css.slice(rbracket + 1).trim()

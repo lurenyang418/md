@@ -20,27 +20,3 @@ export const githubConfig = {
     `ghp_eYyd3kxWTZmsV8doocsmdDFbAa7AEGQTJgmOd0GUmtY`,
   ],
 }
-
-export const giteeConfig = {
-  username: `filesss`,
-  repoList: Array.from({ length: 20 }, (_, i) => `img${i}`),
-  branch: `main`,
-  accessTokenList: [
-    `ed5fc9866bd6c2fdoocsmddd433f806fd2f399c`,
-    `5448ffebbbf1151doocsmdc4e337cf814fc8a62`,
-    `25b05efd2557ca2doocsmd75b5c0835e3395911`,
-    `11628c7a5aef015doocsmd2eeff9fb9566f0458`,
-    `cb2f5145ed938dedoocsmdbd063b4ed244eecf8`,
-    `d8c0b57500672c1doocsmd55f48b866b5ebcd98`,
-    `78c56eadb88e453doocsmd43ddd95753351771a`,
-    `03e1a688003948fdoocsmda16fcf41e6f03f1f0`,
-    `c49121cf4d191fbdoocsmdd6a7877ed537e474a`,
-    `adfeb2fadcdc4aadoocsmdfe1ee869ac9c968ff`,
-    `116c94549ca4a0ddoocsmd192653af5c0694616`,
-    `ecf30ed7f2eb184doocsmd51ea4ec8300371d9e`,
-    `5837cf2bd5afd93doocsmd73904bed31934949e`,
-    `b5b7e1c7d57e01fdoocsmd5266f552574297d78`,
-    `684d55564ffbd0bdoocsmd7d747e5cc23aed6d6`,
-    `3fc04a9d272ab71doocsmd010c56cb57d88d2ba`,
-  ],
-}

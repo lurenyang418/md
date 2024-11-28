@@ -8,7 +8,7 @@ export type Inline = `listitem` | `codespan` | `link` | `wx_link` | `strong` | `
 
 interface CustomCSSProperties {
   [`--md-primary-color`]?: string
-  [key: `--${string}`]: string | undefined
+  [key: `--\${string}`]: string | undefined
 }
 
 export type ExtendedProperties = PropertiesHyphen & CustomCSSProperties
@@ -37,7 +37,7 @@ export interface IConfigOption<VT = string> {
 }
 
 /**
- * Options for the `markedAlert` extension.
+ * Options for the "markedAlert" extension.
  */
 export interface AlertOptions {
   className?: string

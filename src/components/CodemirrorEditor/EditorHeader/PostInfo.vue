@@ -16,6 +16,7 @@ const { output } = storeToRefs(store)
 
 const dialogVisible = ref(false)
 
+// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 const form = ref<any>({
   title: ``,
   desc: ``,
@@ -30,10 +31,11 @@ function prePost() {
     auto = {
       thumb: document.querySelector<HTMLImageElement>(`#output img`)?.src,
       title: [1, 2, 3, 4, 5, 6]
+        // biome-ignore lint/style/noNonNullAssertion: <explanation>
         .map(h => document.querySelector(`#output h${h}`)!)
         .filter(h => h)[0]
         .textContent,
-      desc: document.querySelector(`#output p`)!.textContent,
+      desc: document.querySelector(`#output p`)?.textContent,
       content: output.value,
     }
   }

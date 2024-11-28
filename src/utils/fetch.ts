@@ -8,8 +8,8 @@ const service = axios.create({
 
 service.interceptors.request.use(
   (config) => {
-    if (/^(?:post|put|delete)$/i.test(`${config.method}`)) {
-      if (config.data && config.data.upload) {
+    if (/^(?:post|put|delete)$/i.test(`\${config.method}`)) {
+      if (config.data?.upload) {
         config.headers[`Content-Type`] = `multipart/form-data`
       }
     }

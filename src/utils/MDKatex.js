@@ -21,7 +21,7 @@ function createRenderer(display) {
 }
 
 function inlineKatex(options, renderer) {
-  const nonStandard = options && options.nonStandard
+  const nonStandard = options?.nonStandard
   const ruleReg = nonStandard ? inlineRuleNonStandard : inlineRule
   return {
     name: `inlineKatex`,

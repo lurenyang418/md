@@ -22,7 +22,6 @@ import {
   altSign,
   codeBlockThemeOptions,
   colorOptions,
-  ctrlKey,
   ctrlSign,
   fontFamilyOptions,
   fontSizeOptions,
@@ -51,27 +50,27 @@ const formatItems = [
   {
     label: `加粗`,
     kbd: [ctrlSign, `B`],
-    emitArgs: [`addFormat`, `${ctrlKey}-B`],
+    emitArgs: [`addFormat`, `\${ctrlKey}-B`],
   },
   {
     label: `斜体`,
     kbd: [ctrlSign, `I`],
-    emitArgs: [`addFormat`, `${ctrlKey}-I`],
+    emitArgs: [`addFormat`, `\${ctrlKey}-I`],
   },
   {
     label: `删除线`,
     kbd: [ctrlSign, `D`],
-    emitArgs: [`addFormat`, `${ctrlKey}-D`],
+    emitArgs: [`addFormat`, `\${ctrlKey}-D`],
   },
   {
     label: `超链接`,
     kbd: [ctrlSign, `K`],
-    emitArgs: [`addFormat`, `${ctrlKey}-K`],
+    emitArgs: [`addFormat`, `\${ctrlKey}-K`],
   },
   {
     label: `行内代码`,
     kbd: [ctrlSign, `E`],
-    emitArgs: [`addFormat`, `${ctrlKey}-E`],
+    emitArgs: [`addFormat`, `\${ctrlKey}-E`],
   },
   {
     label: `格式化`,
@@ -95,12 +94,10 @@ function copy() {
       // 创建一个 div 元素来暂存原始 HTML 字符串
       const tempDiv = document.createElement(`div`)
       tempDiv.innerHTML = htmlString
-
       const originalItems = tempDiv.querySelectorAll(`li > ul, li > ol`)
-
-      originalItems.forEach((originalItem) => {
-        originalItem.parentElement!.insertAdjacentElement(`afterend`, originalItem)
-      })
+      for (const item of originalItems) {
+        item.parentElement?.insertAdjacentElement(`afterend`, item)
+      }
 
       // 返回修改后的 HTML 字符串
       return tempDiv.innerHTML
@@ -137,14 +134,14 @@ function copy() {
       p.innerHTML = `&nbsp;`
       clipboardDiv.insertBefore(p, clipboardDiv.firstChild)
 
-      window.getSelection()!.removeAllRanges()
+      window.getSelection()?.removeAllRanges()
       const range = document.createRange()
 
       range.setStartBefore(clipboardDiv.firstChild!)
       range.setEndAfter(clipboardDiv.lastChild!)
-      window.getSelection()!.addRange(range)
+      window.getSelection()?.addRange(range)
       document.execCommand(`copy`)
-      window.getSelection()!.removeAllRanges()
+      window.getSelection()?.removeAllRanges()
       clipboardDiv.innerHTML = output.value
 
       if (isBeforeDark) {
@@ -169,7 +166,7 @@ function copy() {
 function customStyle() {
   displayStore.toggleShowCssEditor()
   setTimeout(() => {
-    store.cssEditor!.refresh()
+    store.cssEditor?.refresh()
   }, 50)
 }
 </script>

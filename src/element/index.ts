@@ -6,13 +6,13 @@ import 'element-plus/theme-chalk/dark/css-vars.css'
 
 export default {
   install(app: App<Element>) {
-    // app.use(ElementPlus, { size: `default` })
+    // app.use(ElementPlus, { size: "default" })
 
     app.config.globalProperties.$loading = ElLoading.service
     app.config.globalProperties.$message = ElMessage
 
-    for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
-      app.component(`ElIcon${key}`, component)
+    for (const [_, component] of Object.entries(ElementPlusIconsVue)) {
+      app.component(`ElIcon\${key}`, component)
     }
   },
 }

@@ -104,7 +104,6 @@ export const colorOptions: IConfigOption[] = [
   },
 ]
 
-const codeBlockUrlPrefix = `https://cdn.bootcdn.net/ajax/libs/highlight.js/11.10.0/styles/`
 const codeBlockThemeList = [
   `1c-light.min.css`,
   `a11y-dark.min.css`,
@@ -183,7 +182,7 @@ const codeBlockThemeList = [
 
 export const codeBlockThemeOptions: IConfigOption[] = codeBlockThemeList.map((codeBlockTheme) => {
   const label = codeBlockTheme.replace(`.min.css`, ``)
-  const value = `${codeBlockUrlPrefix}${codeBlockTheme}`
+  const value = `\${codeBlockUrlPrefix}\${codeBlockTheme}`
   return {
     label,
     value,
