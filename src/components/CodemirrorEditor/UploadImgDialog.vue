@@ -122,7 +122,7 @@ function beforeImageUpload(file: File) {
   imgHost = imgHost || `default`
   localStorage.setItem(`imgHost`, imgHost)
 
-  const config = localStorage.getItem(`\${imgHost}Config`)
+  const config = localStorage.getItem(`${imgHost}Config`)
   const isValidHost = imgHost === `default` || config
   if (!isValidHost) {
     ElMessage.error(`请先配置 \${imgHost} 图床参数`)
