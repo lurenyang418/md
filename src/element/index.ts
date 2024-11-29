@@ -11,8 +11,8 @@ export default {
     app.config.globalProperties.$loading = ElLoading.service
     app.config.globalProperties.$message = ElMessage
 
-    for (const [_, component] of Object.entries(ElementPlusIconsVue)) {
-      app.component(`ElIcon\${key}`, component)
+    for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
+      app.component(`ElIcon${key}`, component)
     }
   },
 }

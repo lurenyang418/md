@@ -131,7 +131,7 @@ async function qiniuUpload(file: File) {
     scope: bucket,
     deadline: Math.trunc(new Date().getTime() / 1000) + 3600,
   })
-  const dir = path ? `\${path}/` : ``
+  const dir = path ? `${path}/` : ``
   const dateFilename = dir + getDateFilename(file.name)
   const observable = qiniu.upload(file, dateFilename, token, {}, { region })
   return new Promise<string>((resolve, reject) => {

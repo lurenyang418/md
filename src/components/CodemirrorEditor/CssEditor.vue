@@ -15,7 +15,7 @@ function editTabName() {
     inputValidator: store.validatorTabName,
   })
     .then(({ value }) => {
-      if (!(`\${value}`).trim()) {
+      if (!(`${value}`).trim()) {
         ElMessage.error(`修改失败，方案名不可为空`)
         return
       }
@@ -29,12 +29,12 @@ function handleTabsEdit(targetName: string, action: string) {
     ElMessageBox.prompt(`请输入方案名称`, `新建自定义 CSS`, {
       confirmButtonText: `确认`,
       cancelButtonText: `取消`,
-      inputValue: `方案\${store.cssContentConfig.tabs.length + 1}`,
+      inputValue: `方案${store.cssContentConfig.tabs.length + 1}`,
       inputErrorMessage: `不能与现有方案重名`,
       inputValidator: store.validatorTabName,
     })
       .then(({ value }) => {
-        if (!(`\${value}`).trim()) {
+        if (!(`${value}`).trim()) {
           ElMessage.error(`新建失败，方案名不可为空`)
           return
         }
