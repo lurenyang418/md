@@ -4,22 +4,22 @@ import { useDisplayStore } from '@/stores'
 import { checkImage } from '@/utils'
 
 import { UploadFilled } from '@element-plus/icons-vue'
-import CodeMirror from 'codemirror'
 
 import { ElMessage } from 'element-plus'
-import { nextTick, onBeforeMount, ref, watch } from 'vue'
+import { onBeforeMount, ref } from 'vue'
 
 const emit = defineEmits([`uploadImage`])
-
 const displayStore = useDisplayStore()
 
 const formGitHub = ref({
+  username: ``,
   repo: ``,
   branch: ``,
   accessToken: ``,
 })
 
-const formQiniu = ref({
+const formR2 = ref({
+  accountId: ``,
   accessKey: ``,
   secretKey: ``,
   bucket: ``,
@@ -30,48 +30,24 @@ const formQiniu = ref({
 
 const options = [
   {
-    value: `default`,
-    label: `默认`,
-  },
-  {
     value: `github`,
     label: `GitHub`,
   },
   {
-    value: `qiniu`,
-    label: `七牛云`,
+    value: `r2`,
+    label: `Cloudflare`,
   },
 ]
 
-const imgHost = ref(`default`)
-
-const formCustomElInput = ref<(HTMLInputElement & { $el: HTMLElement }) | null>(null)
+const imgHost = ref(`r2`)
 const activeName = ref(`upload`)
-
-watch(
-  activeName,
-  async (val) => {
-    if (val === `formCustom`) {
-      nextTick(() => {
-        const textarea = formCustomElInput.value!.$el.querySelector(`textarea`)!
-        formCustom.value.editor ||= CodeMirror.fromTextArea(textarea, {
-          mode: `javascript`,
-        })
-        // formCustom.value.editor.setValue(formCustom.value.code)
-      })
-    }
-  },
-  {
-    immediate: true,
-  },
-)
 
 onBeforeMount(() => {
   if (localStorage.getItem(`githubConfig`)) {
     formGitHub.value = JSON.parse(localStorage.getItem(`githubConfig`)!)
   }
-  if (localStorage.getItem(`qiniuConfig`)) {
-    formQiniu.value = JSON.parse(localStorage.getItem(`qiniuConfig`)!)
+  if (localStorage.getItem(`r2Config`)) {
+    formR2.value = JSON.parse(localStorage.getItem(`r2Config`)!)
   }
   if (localStorage.getItem(`imgHost`)) {
     imgHost.value = localStorage.getItem(`imgHost`)!
@@ -84,29 +60,36 @@ function changeImgHost() {
 }
 
 function saveGitHubConfiguration() {
-  if (!(formGitHub.value.repo && formGitHub.value.accessToken)) {
-    const blankElement = formGitHub.value.repo ? `token` : `GitHub 仓库`
-    ElMessage.error(`参数「${blankElement}」不能为空`)
+  if (
+    !(
+      formGitHub.value.username
+      && formGitHub.value.repo
+      && formGitHub.value.accessToken
+    )
+  ) {
+    ElMessage.error(`Github 参数配置不全`)
     return
   }
-
+  if (formGitHub.value.branch === ``) {
+    formGitHub.value.branch = `main`
+  }
   localStorage.setItem(`githubConfig`, JSON.stringify(formGitHub.value))
   ElMessage.success(`保存成功`)
 }
 
-function saveQiniuConfiguration() {
+function saveR2Configuration() {
   if (
     !(
-      formQiniu.value.accessKey
-      && formQiniu.value.secretKey
-      && formQiniu.value.bucket
-      && formQiniu.value.domain
+      formR2.value.accountId
+      && formR2.value.accessKey
+      && formR2.value.secretKey
+      && formR2.value.bucket
     )
   ) {
-    ElMessage.error(`七牛云 Kodo 参数配置不全`)
+    ElMessage.error(`CloudFlare 参数配置不全`)
     return
   }
-  localStorage.setItem(`qiniuConfig`, JSON.stringify(formQiniu.value))
+  localStorage.setItem(`r2Config`, JSON.stringify(formR2.value))
   ElMessage.success(`保存成功`)
 }
 
@@ -118,8 +101,7 @@ function beforeImageUpload(file: File) {
     return false
   }
   // check image host
-  let imgHost = localStorage.getItem(`imgHost`)
-  imgHost = imgHost || `default`
+  const imgHost = localStorage.getItem(`imgHost`) as string
   localStorage.setItem(`imgHost`, imgHost)
 
   const config = localStorage.getItem(`${imgHost}Config`)
@@ -185,19 +167,23 @@ function uploadImage(params: { file: any }) {
             label-position="right"
             label-width="150px"
           >
-            <el-form-item label="GitHub 仓库" :required="true">
+            <el-form-item label="用户名" :required="true">
+              <el-input
+                v-model.trim="formGitHub.username"
+              />
+            </el-form-item>
+            <el-form-item label="仓库(repo)" :required="true">
               <el-input
                 v-model.trim="formGitHub.repo"
-                placeholder="如：github.com/yanglbme/resource"
               />
             </el-form-item>
-            <el-form-item label="分支">
+            <el-form-item label="分支(branch)">
               <el-input
                 v-model.trim="formGitHub.branch"
-                placeholder="如：release，可不填，默认 master"
+                placeholder="如：release，可不填，默认 main"
               />
             </el-form-item>
-            <el-form-item label="Token" :required="true">
+            <el-form-item label="Token(PAT)" :required="true">
               <el-input
                 v-model.trim="formGitHub.accessToken"
                 show-password
@@ -218,53 +204,59 @@ function uploadImage(params: { file: any }) {
             </el-form-item>
           </el-form>
         </el-tab-pane>
-        <el-tab-pane class="github-panel" label="七牛云 Kodo" name="qiniu">
+        <el-tab-pane class="github-panel" label="CloudFlare R2" name="r2">
           <el-form
             class="setting-form"
-            :model="formQiniu"
+            :model="formR2"
             label-position="right"
             label-width="150px"
           >
+            <el-form-item label="AccountId" :required="true">
+              <el-input
+                v-model.trim="formR2.accountId"
+                placeholder="选中 R2后，右上角账号详细信息"
+              />
+            </el-form-item>
             <el-form-item label="AccessKey" :required="true">
               <el-input
-                v-model.trim="formQiniu.accessKey"
+                v-model.trim="formR2.accessKey"
                 placeholder="如：6DD3VaLJ_SQgOdoocsyTV_YWaDmdnL2n8EGx7kG"
               />
             </el-form-item>
             <el-form-item label="SecretKey" :required="true">
               <el-input
-                v-model.trim="formQiniu.secretKey"
+                v-model.trim="formR2.secretKey"
                 show-password
                 placeholder="如：qgZa5qrvDOOcsmdKStD1oCjZ9nB7MDvJUs_34SIm"
               />
             </el-form-item>
             <el-form-item label="Bucket" :required="true">
-              <el-input v-model.trim="formQiniu.bucket" placeholder="如：md" />
+              <el-input v-model.trim="formR2.bucket" placeholder="如：md" />
             </el-form-item>
             <el-form-item label="Bucket 对应域名" :required="true">
               <el-input
-                v-model.trim="formQiniu.domain"
+                v-model.trim="formR2.domain"
                 placeholder="如：https://images.123ylb.cn"
               />
             </el-form-item>
             <el-form-item label="存储区域" :required="false">
-              <el-input v-model.trim="formQiniu.region" placeholder="如：z2，可不填" />
+              <el-input v-model.trim="formR2.region" placeholder="如：z2，可不填" />
             </el-form-item>
             <el-form-item label="存储路径" :required="false">
               <el-input
-                v-model.trim="formQiniu.path"
+                v-model.trim="formR2.path"
                 placeholder="如：img，可不填，默认为根目录"
               />
               <el-link
                 type="primary"
-                href="https://developer.qiniu.com/kodo"
+                href="https://developers.cloudflare.com/r2/examples/aws/aws-sdk-js-v3/"
                 target="_blank"
               >
-                如何使用七牛云 Kodo？
+                如何使用Cloudflare R2？
               </el-link>
             </el-form-item>
             <el-form-item>
-              <el-button type="primary" @click="saveQiniuConfiguration">
+              <el-button type="primary" @click="saveR2Configuration">
                 保存配置
               </el-button>
             </el-form-item>

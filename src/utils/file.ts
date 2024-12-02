@@ -1,44 +1,6 @@
-import { githubConfig } from '@/config'
-import fetch from '@/utils/fetch'
-
-import { base64encode, safe64, utf16to8 } from '@/utils/tokenTools'
-import CryptoJS from 'crypto-js'
-import * as qiniu from 'qiniu-js'
+import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { v4 as uuidv4 } from 'uuid'
-
-function getConfig(useDefault: boolean, platform: string) {
-  if (useDefault) {
-    // load default config file
-    const config = githubConfig
-    const { username, repoList, branch, accessTokenList } = config
-
-    // choose random token from access_token list
-    const tokenIndex = Math.floor(Math.random() * accessTokenList.length)
-    const accessToken = accessTokenList[tokenIndex].replace(`doocsmd`, ``)
-
-    // choose random repo from repo list
-    const repoIndex = Math.floor(Math.random() * repoList.length)
-    const repo = repoList[repoIndex]
-
-    return { username, repo, branch, accessToken }
-  }
-
-  // load configuration from localStorage
-  const customConfig = JSON.parse(localStorage.getItem(`${platform}Config`)!)
-
-  // split username/repo
-  const repoUrl = customConfig.repo
-    .replace(`https://${platform}.com/`, ``)
-    .replace(`http://${platform}.com/`, ``)
-    .replace(`${platform}.com/`, ``)
-    .split(`/`)
-  return {
-    username: repoUrl[0],
-    repo: repoUrl[1],
-    branch: customConfig.branch || `master`,
-    accessToken: customConfig.accessToken,
-  }
-}
 
 /**
  * 获取 "年/月/日" 形式的目录
@@ -60,7 +22,7 @@ function getDir() {
 function getDateFilename(filename: string) {
   const currentTimestamp = new Date().getTime()
   const fileSuffix = filename.split(`.`)[1]
-  return `${currentTimestamp}-${uuidv4()}.${fileSuffix}`
+  return `${currentTimestamp}-${uuidv4().replace(/-/g, ``)}.${fileSuffix}`
 }
 
 // -----------------------------------------------------------------------
@@ -68,85 +30,53 @@ function getDateFilename(filename: string) {
 // -----------------------------------------------------------------------
 
 async function ghFileUpload(content: string, filename: string) {
-  const useDefault = localStorage.getItem(`imgHost`) === `default`
-  const { username, repo, branch, accessToken } = getConfig(
-    useDefault,
-    `github`,
+  const { username, repo, branch, accessToken } = JSON.parse(
+    localStorage.getItem(`githubConfig`)!,
   )
-
   const dir = getDir()
   const url = `https://api.github.com/repos/${username}/${repo}/contents/${dir}/`
   const dateFilename = getDateFilename(filename)
-  const res = await fetch<{ content: {
-    download_url: string
-  } }, {
-      content: {
-        download_url: string
-      }
-      data?: {
-        content: {
-          download_url: string
-        }
-      }
-    }>({
-    url: url + dateFilename,
-    method: `put`,
-    headers: {
-      Authorization: `token ${accessToken}`,
+  const res = await fetch(
+    url + dateFilename,
+    {
+      method: `put`,
+      headers: {
+        Authorization: `token ${accessToken}`,
+      },
+      body: JSON.stringify({
+        content,
+        branch,
+        message: `Upload by ${window.location.href}`,
+      }),
     },
-    data: {
-      content,
-      branch,
-      message: `Upload by ${window.location.href}`,
-    },
-  })
-  const githubResourceUrl = `raw.githubusercontent.com/${username}/${repo}/${branch}/`
-  const cdnResourceUrl = `fastly.jsdelivr.net/gh/${username}/${repo}@${branch}/`
-  res.content = res.data?.content || res.content
-  return useDefault
-    ? res.content.download_url.replace(githubResourceUrl, cdnResourceUrl)
-    : res.content.download_url
+  ).then(res => res.json()).catch(err => console.log(err))
+  return res.content.download_url
 }
 
 // -----------------------------------------------------------------------
-// Qiniu File Upload
+// Cloudflare R2 File Upload
 // -----------------------------------------------------------------------
 
-function getQiniuToken(accessKey: string, secretKey: string, putPolicy: {
-  scope: string
-  deadline: number
-}) {
-  const policy = JSON.stringify(putPolicy)
-  const encoded = base64encode(utf16to8(policy))
-  const hash = CryptoJS.HmacSHA1(encoded, secretKey)
-  const encodedSigned = hash.toString(CryptoJS.enc.Base64)
-  return `${accessKey}:${safe64(encodedSigned)}:${encoded}`
-}
-
-async function qiniuUpload(file: File) {
-  const { accessKey, secretKey, bucket, region, path, domain } = JSON.parse(
-    localStorage.getItem(`qiniuConfig`)!,
+async function r2Upload(file: File) {
+  const { accountId, accessKey, secretKey, bucket, path, domain } = JSON.parse(
+    localStorage.getItem(`r2Config`)!,
   )
-  const token = getQiniuToken(accessKey, secretKey, {
-    scope: bucket,
-    deadline: Math.trunc(new Date().getTime() / 1000) + 3600,
-  })
   const dir = path ? `${path}/` : ``
   const dateFilename = dir + getDateFilename(file.name)
-  const observable = qiniu.upload(file, dateFilename, token, {}, { region })
-  return new Promise<string>((resolve, reject) => {
-    observable.subscribe({
-      next: (result) => {
-        console.log(result)
-      },
-      error: (err) => {
-        reject(err.message)
-      },
-      complete: (result) => {
-        resolve(`${domain}/${result.key}`)
-      },
-    })
-  })
+  const client = new S3Client({ region: `auto`, endpoint: `https://${accountId}.r2.cloudflarestorage.com`, credentials: { accessKeyId: accessKey, secretAccessKey: secretKey } })
+  const signedUrl = await getSignedUrl(
+    client,
+    new PutObjectCommand({ Bucket: bucket, Key: dateFilename, ContentType: file.type }),
+    { expiresIn: 300 },
+  )
+  await fetch(signedUrl, {
+    method: `PUT`,
+    headers: {
+      'Content-Type': file.type,
+    },
+    body: file,
+  }).catch((err) => { console.log(err, 3456) })
+  return `${domain}/${dateFilename}`
 }
 
 function fileUpload(content: string, file: File) {
@@ -155,14 +85,9 @@ function fileUpload(content: string, file: File) {
     localStorage.setItem(`imgHost`, `default`)
   }
   switch (imgHost) {
-    case `qiniu`:
-      return qiniuUpload(file)
-    case `github`:
-      return ghFileUpload(content, file.name)
+    case `r2`:
+      return r2Upload(file)
     default:
-      // return file.size / 1024 < 1024
-      //     ? giteeUpload(content, file.name)
-      //     : ghFileUpload(content, file.name);
       return ghFileUpload(content, file.name)
   }
 }

@@ -172,7 +172,7 @@ function uploadImage(file: File, cb?: { (url: any): void, (arg0: unknown): void 
         cb(url)
       }
       else {
-        uploaded(url)
+        uploaded(url!)
       }
     })
     .catch((err) => {
